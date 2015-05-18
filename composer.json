@@ -1,0 +1,20 @@
+{
+    "name": "lauft/behat-bash-extension",
+    "description": "Bash extension for Behat BDD tool",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "lauft",
+            "email": "thomas.lauf@tngtech.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "behat/behat": "~3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lauft\\": "src/"
+        }
+    }
+}
