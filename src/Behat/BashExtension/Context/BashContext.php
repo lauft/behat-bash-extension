@@ -8,6 +8,22 @@ namespace Lauft\Behat\BashExtension\Context;
  */
 class BashContext extends RawBashContext
 {
+    /** @var string */
+    protected $rootDirectory;
+
+    /** @var string */
+    protected $workingDir;
+
+    /** @var Process */
+    protected $process;
+
+    public function __construct($rootDirectory = DIRECTORY_SEPARATOR)
+    {
+        $this->rootDirectory = $rootDirectory;
+        $this->process = new Process(null);
+    }
+
+    /**
     /**
      * @When /^I run "([^"]*)"(?: with "([^"]*)")?$/
      *
