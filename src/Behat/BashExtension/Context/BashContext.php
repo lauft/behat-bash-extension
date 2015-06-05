@@ -1,6 +1,9 @@
 <?php
 
 namespace Lauft\Behat\BashExtension\Context;
+use Symfony\Component\Process\Process;
+use PHPUnit_Framework_Assert;
+use Behat\Gherkin\Node\PyStringNode;
 
 /**
  * BashContext context for Behat BDD tool.
@@ -8,25 +11,6 @@ namespace Lauft\Behat\BashExtension\Context;
  */
 class BashContext extends RawBashContext
 {
-    /** @var string */
-    protected $rootDirectory;
-
-    /** @var string */
-    protected $workingDir;
-
-    /** @var Process */
-    protected $process;
-
-    /**
-     * @param string $rootDirectory
-     */
-    public function __construct($rootDirectory = DIRECTORY_SEPARATOR)
-    {
-        $this->rootDirectory = $rootDirectory;
-        $this->workingDir = $rootDirectory;
-        $this->process = new Process(null);
-    }
-
     /**
      * @When /^I run "([^"]*)"(?: with "([^"]*)")?$/
      *
@@ -36,10 +20,59 @@ class BashContext extends RawBashContext
     public function iRunCommand($command, $arguments = '')
     {
         $arguments = strtr($arguments, array('\'' => '"'));
+        $this->executeCommand($command.' '.$arguments);
+    }
 
-        $this->process->setWorkingDirectory($this->workingDir);
-        $this->process->setCommandLine($command.' '.$arguments);
-        $this->process->start();
-        $this->process->wait();
+    /**
+     * Checks whether previously ran command passed|failed with provided output.
+     *
+     * @Then /^it should (fail|pass) with:/
+     *
+     * @param   string       $success "fail" or "pass"
+     * @param   PyStringNode $text    PyString text instance
+     */
+    public function itShouldExitWithOutput($success, PyStringNode $text)
+    {
+        $this->itShouldExitWith($success);
+        $this->theOutputShouldContain($text);
+    }
+
+    /**
+     * Checks whether previously ran command failed|passed.
+     *
+     * @Then /^it should (fail|pass)$/
+     *
+     * @param   string $result "fail" or "pass"
+     */
+    public function itShouldExitWith($result)
+    {
+        if ('fail' === $result) {
+            $this->assertNotExitCode(0);
+
+        } else {
+            $this->assertExitCode(0);
+        }
+    }
+
+    /**
+     * Checks whether last command output contains provided string.
+     *
+     * @Then the output should contain:
+     *
+     * @param   PyStringNode $text PyString text instance
+     */
+    public function theOutputShouldContain(PyStringNode $text)
+    {
+        PHPUnit_Framework_Assert::assertContains($this->getExpectedOutput($text), $this->getOutput());
+    }
+
+    /**
+     * @Then the output should match:
+     *
+     * @param PyStringNode $regexp
+     */
+    public function theOutputShouldMatch(PyStringNode $regexp)
+    {
+        PHPUnit_Framework_Assert::assertRegExp('/^'.$regexp.'$/', $this->getOutput());
     }
 }
