@@ -17,13 +17,16 @@ class BashContext extends RawBashContext
     /** @var Process */
     protected $process;
 
+    /**
+     * @param string $rootDirectory
+     */
     public function __construct($rootDirectory = DIRECTORY_SEPARATOR)
     {
         $this->rootDirectory = $rootDirectory;
+        $this->workingDir = $rootDirectory;
         $this->process = new Process(null);
     }
 
-    /**
     /**
      * @When /^I run "([^"]*)"(?: with "([^"]*)")?$/
      *
