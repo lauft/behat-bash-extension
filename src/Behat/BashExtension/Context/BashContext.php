@@ -12,6 +12,17 @@ use Behat\Gherkin\Node\PyStringNode;
 class BashContext extends RawBashContext
 {
     /**
+     * @Given /^I am in directory "([^"]*)"$/
+     * @When /^I change to directory "([^"]*)"$/
+     *
+     * @param string $path
+     */
+    public function iChangeToDirectory($path)
+    {
+        $this->changeDirectory($path);
+    }
+
+    /**
      * @Given /^there is a directory "([^"]*)"$/
      * @When /^I create directory "([^"]*)"$/
      *

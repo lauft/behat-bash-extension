@@ -117,6 +117,24 @@ class RawBashContext implements Context
     /**
      * @param $path
      */
+    protected function changeDirectory($path)
+    {
+        if (strpos($path, DIRECTORY_SEPARATOR) === 0) {
+            $path = $this->rootDirectory . $path;
+        } else {
+            $path = $this->workingDir . DIRECTORY_SEPARATOR . $path;
+        }
+
+        if (!chdir($path)) {
+            throw new RuntimeException();
+        }
+
+        $this->workingDir = getcwd();
+    }
+
+    /**
+     * @param $path
+     */
     protected function makeDirectory($path)
     {
         if (!mkdir($path)) {
