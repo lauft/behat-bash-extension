@@ -4,6 +4,7 @@ namespace Lauft\Behat\BashExtension\Context;
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -111,5 +112,15 @@ class RawBashContext implements Context
         }
 
         return $text;
+    }
+
+    /**
+     * @param $path
+     */
+    protected function makeDirectory($path)
+    {
+        if (!mkdir($path)) {
+            throw new RuntimeException();
+        }
     }
 }

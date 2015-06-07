@@ -1,7 +1,7 @@
 <?php
 
 namespace Lauft\Behat\BashExtension\Context;
-use Symfony\Component\Process\Process;
+
 use PHPUnit_Framework_Assert;
 use Behat\Gherkin\Node\PyStringNode;
 
@@ -11,6 +11,17 @@ use Behat\Gherkin\Node\PyStringNode;
  */
 class BashContext extends RawBashContext
 {
+    /**
+     * @Given /^there is a directory "([^"]*)"$/
+     * @When /^I create directory "([^"]*)"$/
+     *
+     * @param string $path
+     */
+    public function iCreateDirectory($path)
+    {
+        $this->makeDirectory($path);
+    }
+
     /**
      * @When /^I run "([^"]*)"(?: with "([^"]*)")?$/
      *
