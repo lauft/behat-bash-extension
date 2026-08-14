@@ -4,6 +4,7 @@ namespace Lauft\Behat\BashExtension\Context;
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
+use PHPUnit\Framework\Assert;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
@@ -21,6 +22,9 @@ class RawBashContext implements Context
     /** @var Process */
     protected $process;
 
+    /** @var array<string, string> */
+    protected array $processEnv = [];
+
     /**
      * @param string $rootDirectory
      */
@@ -28,7 +32,6 @@ class RawBashContext implements Context
     {
         $this->rootDirectory = $rootDirectory;
         $this->workingDir = $rootDirectory;
-        $this->process = new Process(null);
     }
 
     /**
@@ -36,8 +39,9 @@ class RawBashContext implements Context
      */
     protected function executeCommand($commandLine)
     {
+        $this->process = Process::fromShellCommandLine($commandLine);
         $this->process->setWorkingDirectory($this->workingDir);
-        $this->process->setCommandLine($commandLine);
+        $this->process->setEnv($this->processEnv ?? []);
         $this->process->start();
         $this->process->wait();
     }
@@ -47,7 +51,7 @@ class RawBashContext implements Context
      */
     public function assertExitCode($exitCode)
     {
-        \PHPUnit_Framework_Assert::assertSame($exitCode, $this->getExitCode());
+        Assert::assertSame($exitCode, $this->getExitCode());
     }
 
     /**
@@ -55,7 +59,7 @@ class RawBashContext implements Context
      */
     public function assertNotExitCode($exitCode)
     {
-        \PHPUnit_Framework_Assert::assertNotSame($exitCode, $this->getExitCode());
+        Assert::assertNotSame($exitCode, $this->getExitCode());
     }
 
     /**

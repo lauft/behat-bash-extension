@@ -2,7 +2,7 @@
 
 namespace Lauft\Behat\BashExtension\Context;
 
-use PHPUnit_Framework_Assert;
+use PHPUnit\Framework\Assert;
 use Behat\Gherkin\Node\PyStringNode;
 
 /**
@@ -85,7 +85,7 @@ class BashContext extends RawBashContext
      */
     public function theOutputShouldContain(PyStringNode $text)
     {
-        PHPUnit_Framework_Assert::assertContains($this->getExpectedOutput($text), $this->getOutput());
+        Assert::assertStringContainsString($this->getExpectedOutput($text), $this->getOutput());
     }
 
     /**
@@ -95,6 +95,6 @@ class BashContext extends RawBashContext
      */
     public function theOutputShouldMatch(PyStringNode $regexp)
     {
-        PHPUnit_Framework_Assert::assertRegExp('/^'.$regexp.'$/', $this->getOutput());
+        Assert::assertMatchesRegularExpression('/^'.$regexp.'$/', $this->getOutput());
     }
 }
