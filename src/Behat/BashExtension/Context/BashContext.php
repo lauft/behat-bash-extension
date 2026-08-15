@@ -212,7 +212,7 @@ class BashContext extends RawBashContext
     public function iWaitForJobToRun($cmd, $cnt = 1, $timeout = 60)
     {
         $process = Process::fromShellCommandLine(
-            'while [ ' . $cnt . ' -gt $(pgrep -f ' . $cmd . ' | wc -l) ] ; do sleep 1 ; done'
+            'while [ ' . $cnt . ' -gt $(pgrep -f ' . escapeshellarg($cmd) . ' | wc -l) ] ; do sleep 1 ; done'
         );
         $process->setWorkingDirectory($this->workingDir);
         $process->setTimeout($timeout);
