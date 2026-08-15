@@ -126,7 +126,11 @@ class RawBashContext implements Context
         if (strpos($path, DIRECTORY_SEPARATOR) === 0) {
             $path = $this->rootDirectory . $path;
         } else {
-            $path = $this->workingDir . DIRECTORY_SEPARATOR . $path;
+            $newWorkingDir = $this->workingDir . DIRECTORY_SEPARATOR . $path;
+            if (!file_exists($newWorkingDir)) {
+                mkdir($newWorkingDir, 0777, true);
+            }
+            $path = $newWorkingDir;
         }
 
         if (!chdir($path)) {
@@ -141,8 +145,24 @@ class RawBashContext implements Context
      */
     protected function makeDirectory($path)
     {
-        if (!mkdir($path)) {
-            throw new RuntimeException();
+        if (strpos($path, DIRECTORY_SEPARATOR) !== 0) {
+            $path = $this->workingDir . DIRECTORY_SEPARATOR . $path;
         }
+        if (!mkdir($path, 0777, true)) {
+            throw new RuntimeException('Failed to create directory: ' . $path);
+        }
+    }
+
+    /**
+     * @param string $filename
+     * @param string $content
+     */
+    protected function createFile($filename, $content)
+    {
+        $path = dirname($filename);
+        if (!is_dir($path)) {
+            mkdir($path, 0777, true);
+        }
+        file_put_contents($filename, $content);
     }
 }
