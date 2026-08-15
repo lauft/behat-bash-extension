@@ -205,12 +205,22 @@ class BashContext extends RawBashContext
      * @Given /^job "([^"]*)" is running$/
      * @Given /^(\d+) jobs "([^"]*)" are running$/
      *
-     * @param string $cmd
-     * @param int    $cnt
-     * @param int    $timeout
+     * @param string|int $param1
+     * @param string|int $param2
+     * @param int        $param3
      */
-    public function iWaitForJobToRun($cmd, $cnt = 1, $timeout = 60)
+    public function iWaitForJobToRun($param1, $param2 = 1, $param3 = 60)
     {
+        if (is_numeric($param1)) {
+            $cnt = (int) $param1;
+            $cmd = $param2;
+            $timeout = $param3;
+        } else {
+            $cmd = $param1;
+            $cnt = (int) $param2;
+            $timeout = $param3;
+        }
+
         $process = Process::fromShellCommandLine(
             'while [ ' . $cnt . ' -gt $(pgrep -f ' . escapeshellarg($cmd) . ' | wc -l) ] ; do sleep 1 ; done'
         );
