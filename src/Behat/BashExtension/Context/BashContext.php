@@ -4,6 +4,8 @@ namespace Lauft\Behat\BashExtension\Context;
 
 use PHPUnit\Framework\Assert;
 use Behat\Gherkin\Node\PyStringNode;
+use Exception;
+use Symfony\Component\Process\Process;
 
 /**
  * BashContext context for Behat BDD tool.
@@ -96,5 +98,125 @@ class BashContext extends RawBashContext
     public function theOutputShouldMatch(PyStringNode $regexp)
     {
         Assert::assertMatchesRegularExpression('/^'.$regexp.'$/', $this->getOutput());
+    }
+
+    /**
+     * @Given /^(?:there is )?a file named "([^"]*)" with:$/
+     *
+     * @param string       $filename
+     * @param PyStringNode $content
+     */
+    public function aFileNamedWith($filename, PyStringNode $content)
+    {
+        $content = strtr((string) $content, array("'''" => '"""'));
+        $this->createFile($this->workingDir . '/' . $filename, $content);
+    }
+
+    /**
+     * @Given /^there should be a file named "([^"]*)" with:$/
+     *
+     * @param string       $filename
+     * @param PyStringNode $expectedContent
+     */
+    public function thereShouldBeAFileNamedWith($filename, PyStringNode $expectedContent)
+    {
+        $expectedContent = strtr((string) $expectedContent, array("'''" => '"""'));
+        $path = $this->workingDir . DIRECTORY_SEPARATOR . $filename;
+        if (!file_exists($path)) {
+            throw new Exception('invalid path "' . $path . '"');
+        }
+        $content = file_get_contents($path);
+        Assert::assertEquals($expectedContent, $content);
+    }
+
+    /**
+     * @Given /^file "([^"]*)" exists$/
+     * @Then /^file "([^"]*)" should exist$/
+     *
+     * @param string $path
+     */
+    public function fileShouldExist($path)
+    {
+        Assert::assertFileExists($this->workingDir . DIRECTORY_SEPARATOR . $path);
+    }
+
+    /**
+     * @Given /^file "([^"]*)" does not exist$/
+     * @Then /^file "([^"]*)" should not exist$/
+     *
+     * @param string $path
+     */
+    public function fileShouldNotExist($path)
+    {
+        Assert::assertFileDoesNotExist($this->workingDir . DIRECTORY_SEPARATOR . $path);
+    }
+
+    /**
+     * @Given /^directory "([^"]*)" exists$/
+     * @Then /^directory "([^"]*)" should exist$/
+     *
+     * @param string $path
+     */
+    public function directoryShouldExist($path)
+    {
+        Assert::assertFileExists($this->workingDir . DIRECTORY_SEPARATOR . $path);
+    }
+
+    /**
+     * @Given /^directory "([^"]*)" does not exist$/
+     * @Then /^directory "([^"]*)" should not exist$/
+     *
+     * @param string $path
+     */
+    public function directoryShouldNotExist($path)
+    {
+        Assert::assertFileDoesNotExist($this->workingDir . DIRECTORY_SEPARATOR . $path);
+    }
+
+    /**
+     * @Then /^"([^"]*)" file should contain:$/
+     *
+     * @param string       $path
+     * @param PyStringNode $text
+     */
+    public function fileShouldContain($path, PyStringNode $text)
+    {
+        $path = $this->workingDir . '/' . $path;
+        Assert::assertFileExists($path);
+        $fileContent = trim(file_get_contents($path));
+        if ("\n" !== PHP_EOL) {
+            $fileContent = str_replace(PHP_EOL, "\n", $fileContent);
+        }
+        Assert::assertEquals($this->getExpectedOutput($text), $fileContent);
+    }
+
+    /**
+     * @When /^"([^"]*)" environment variable is set to:$/
+     *
+     * @param string       $name
+     * @param PyStringNode $value
+     */
+    public function iSetEnvironmentVariable($name, PyStringNode $value)
+    {
+        $this->processEnv[(string) $name] = (string) $value;
+    }
+
+    /**
+     * @Given /^job "([^"]*)" is running$/
+     * @Given /^(\d+) jobs "([^"]*)" are running$/
+     *
+     * @param string $cmd
+     * @param int    $cnt
+     * @param int    $timeout
+     */
+    public function iWaitForJobToRun($cmd, $cnt = 1, $timeout = 60)
+    {
+        $process = Process::fromShellCommandLine(
+            'while [ ' . $cnt . ' -gt $(pgrep -f ' . $cmd . ' | wc -l) ] ; do sleep 1 ; done'
+        );
+        $process->setWorkingDirectory($this->workingDir);
+        $process->setTimeout($timeout);
+        $process->run();
+        Assert::assertEquals(0, $process->getExitCode());
     }
 }
