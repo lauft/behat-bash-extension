@@ -23,4 +23,6 @@ jobs:
         run: composer install --prefer-dist --no-interaction
 
       - name: Run tests
-        run: TMPDIR=/tmp/bbe-test vendor/bin/behat --no-colors
+        run: |
+          mkdir -p /tmp/bbe-test
+          TMPDIR=/tmp/bbe-test vendor/bin/behat --no-colors
